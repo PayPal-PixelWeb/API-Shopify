@@ -3,11 +3,12 @@ const rp      = require ('request-promise')
 
 
 class ShopifyDrive{
-
+    //acá obtengo el objeto de la marca
     constructor(opt){
         this.opt = opt
     }
 
+    //función para obtener cantidad y url de orders o products
     getUrl(endpoint, c=undefined, p=1){
         if(c !== undefined){
             console.log(`https://${this.opt.username}:${this.opt.password}@${this.opt.url}/${endpoint}/${c}.json`)
@@ -32,14 +33,18 @@ class ShopifyDrive{
         })
     }
 
+    //Función para obtener los datos desdoblados del api
     getData(endpoint, limite, pagina){
         return new Promise( (resolve, reject) => {
+            //Jalo la cantidad total de productos u órdenes
             this.getCantidad(endpoint)
                 .then(r => {
                     let iteraciones, pInicial, tasa
                     let promesas = []
 
+                    //si es mayor al límite seteado por el api(en este caso 250)
                     if(Number(r.count)>250){
+                        //si los req.params no son nulos
                         if(pagina !== null || limite !== null){
                             iteraciones = Number(limite/250)
 
@@ -51,6 +56,7 @@ class ShopifyDrive{
                             pInicial = 1
                         }
 
+                        //Iteración para obtener los requests en un arreglo promesas
                         for(let i = 0; i<iteraciones; i++){
                             console.log("ies: ",  i)
                             let peticion = rp(this.getUrl(endpoint, undefined, pInicial))
@@ -58,6 +64,7 @@ class ShopifyDrive{
                             pInicial ++
                         }
 
+                        //Resolución de todas las promesas con Promise.all
                         Promise.all(promesas)
                             .then( promesa => {
                                 let arr = [];
@@ -68,9 +75,7 @@ class ShopifyDrive{
                                 })
 
                                 //SACAR LOS ELEMENTOS DEL ARREGLO
-                                /* console.log(arregloRes.length) */
                                 for(let j = 0; j<=arregloRes.length-1; j++){
-                                        console.log("length: ", arregloRes.length)
                                     for(let k =0; k<=arregloRes[j].length-1; k++){
                                         arr.push(arregloRes[j][k]);
                                     }
@@ -84,6 +89,7 @@ class ShopifyDrive{
                             })
 
                     }else{
+                        //Si el total de productos u órdenes es menor a 250
                         console.log(r.count)
                         request(this.getUrl(endpoint), (err, resp, body) =>{
                             if(err){
