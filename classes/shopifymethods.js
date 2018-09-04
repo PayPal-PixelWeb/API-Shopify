@@ -47,8 +47,8 @@ class ShopifyDrive{
                                 tasa = Number(pagina * iteraciones)
 
                         }else{
-                            iteraciones = 0
-                            pInicial = 0
+                            iteraciones = r.count/250
+                            pInicial = 1
                         }
 
                         for(let i = 0; i<iteraciones; i++){
